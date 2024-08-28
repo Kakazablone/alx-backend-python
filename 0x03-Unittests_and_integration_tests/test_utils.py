@@ -17,6 +17,8 @@ def memoize(func):
     cache = {}
 
     def memoized_func(*args):
+        """wraps the original function (func) 
+        to provide caching"""
         if args not in cache:
             cache[args] = func(*args)
         return cache[args]
