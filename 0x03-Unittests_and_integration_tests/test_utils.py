@@ -3,24 +3,26 @@
 import unittest
 from unittest.mock import patch
 
+
 def memoize(func):
     """
     Memoize the given function.
-    
+
     Args:
         func: The function to memoize.
-        
+
     Returns:
         A memoized version of the input function.
     """
     cache = {}
-    
+
     def memoized_func(*args):
         if args not in cache:
             cache[args] = func(*args)
         return cache[args]
-    
+
     return memoized_func
+
 
 class TestMemoize(unittest.TestCase):
     """
@@ -50,6 +52,6 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(result2, 42)
             mock_method.assert_called_once()
 
+
 if __name__ == "__main__":
     unittest.main()
-
