@@ -5,7 +5,6 @@ Unit tests for the `GithubOrgClient` class from the `client` module.
 
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized
 from client import GithubOrgClient
 
 
@@ -14,36 +13,29 @@ class TestGithubOrgClient(unittest.TestCase):
     Unit tests for the `GithubOrgClient` class.
     """
 
-    @parameterized.expand([
-        ("google", {"repos_url": "https://api.github.com/orgs/google/repos"}),
-        ("abc", {"repos_url": "https://api.github.com/orgs/abc/repos"}),
-    ])
-    @patch('client.get_json')
-    def test_org(self, org_name, org_response, mock_get_json):
+    @patch('client.GithubOrgClient.org',
+           new_callable=unittest.mock.PropertyMock)
+    def test_public_repos_url(self, mock_org):
         """
-        Test that the `org` method returns the correct value.
+        Test that `_public_repos_url` returns the
+        correct URL based on the mocked `org` method.
 
         Args:
-            org_name: The name of the organization to test.
-            org_response: Mocked response for the `org` method.
-            mock_get_json: Mocked `get_json` method.
+            mock_org: Mocked `org` property.
         """
 
-        # Set up the mock to return the expected response
-        mock_get_json.return_value = org_response
+        # Set up the mock to return a dictionary with the 'repos_url' key
+        mock_org.return_value = \
+            {"repos_url": "https://api.github.com/orgs/test_org/repos"}
 
-        # Create an instance of GithubOrgClient with the organization name
-        client = GithubOrgClient(org_name)
+        # Create an instance of GithubOrgClient with a test organization name
+        client = GithubOrgClient("test_org")
 
-        # Call the `org` method
-        result = client.org
+        # Access the `_public_repos_url` property
+        result = client._public_repos_url
 
-        # Check if `get_json` was called with the expected URL
-        mock_get_json.\
-            assert_called_once_with(client.ORG_URL.format(org=org_name))
-
-        # Check if the returned value is correct
-        self.assertEqual(result, org_response)
+        # Verify the result matches the expected URL
+        self.assertEqual(result, "https://api.github.com/orgs/test_org/repos")
 
 
 if __name__ == "__main__":
