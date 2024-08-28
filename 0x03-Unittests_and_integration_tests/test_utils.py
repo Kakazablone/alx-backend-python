@@ -1,43 +1,37 @@
 #!/usr/bin/env python3
 
 """
-Test suite for the `get_json` function in the `utils` module.
+Test suite for the `memoize` decorator in the `utils` module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
-from parameterized import parameterized
-from utils import get_json
+from unittest.mock import patch
+from utils import memoize
 
-class TestGetJson(unittest.TestCase):
+class TestMemoize(unittest.TestCase):
     """
-    Unit tests for the `get_json` function.
+    Unit tests for the `memoize` decorator.
     """
 
-    @parameterized.expand([
-        ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),
-    ])
-    @patch('utils.requests.get')  # Patch `requests.get` in the `utils` module
-    def test_get_json(self, test_url: str, test_payload: dict, mock_get: Mock) -> None:
+    def test_memoize(self):
         """
-        Test `get_json` to ensure it returns the expected result and `requests.get` is called correctly.
-        
-        Args:
-            test_url (str): The URL to pass to `get_json`.
-            test_payload (dict): The payload that the mocked `requests.get` will return.
-            mock_get (Mock): The mock object for `requests.get`.
+        Test `memoize` to ensure it correctly caches results.
         """
-        # Configure the mock to return a response with the desired JSON payload
-        mock_response = Mock()
-        mock_response.json.return_value = test_payload
-        mock_get.return_value = mock_response
 
-        # Call the function with the test URL
-        result = get_json(test_url)
+        class TestClass:
+            def a_method(self):
+                return 42
 
-        # Check that `requests.get` was called exactly once with the correct URL
-        mock_get.assert_called_once_with(test_url)
-        
-        # Check that the result from `get_json` matches the test payload
-        self.assertEqual(result, test_payload)
+            @memoize
+            def a_property(self):
+                return self.a_method()
+
+        obj = TestClass()
+
+        with patch.object(obj, 'a_method', return_value=42) as mock_method:
+            result1 = obj.a_property()
+            result2 = obj.a_property()
+
+            self.assertEqual(result1, 42)
+            self.assertEqual(result2, 42)
+            mock_method.assert_called_once()
